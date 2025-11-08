@@ -1,0 +1,234 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ----------------------------------------
+// 1. GESTÃO DE MEMBROS (Módulo Obrigatório)
+// ----------------------------------------
+
+// Membro oficial e ativo da plataforma
+model Member {
+  id        String   @id @default(uuid())
+  nome      String
+  email     String   @unique
+  telefone  String?
+  empresa   String?
+  cargo     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos (o que esse membro faz)
+  meetingsOrganized   Meeting[]            @relation("MeetingsOrganized")
+  meetingsAttending   MeetingParticipant[]
+  referralsMade       Referral[]           @relation("ReferralsMade")
+  referralUpdatesMade ReferralUpdate[]
+  thankYous           ThankYouPost[]       @relation("ThankYous")
+  payments            Payment[]
+  noticesAuthored     Notice[]
+  thankYouPosts       ThankYouPost[]
+
+  @@map("members") // Nome da tabela no banco
+}
+
+// Intenção de um visitante para entrar no grupo
+model Intention {
+  id        String   @id @default(uuid())
+  nome      String
+  email     String
+  telefone  String?
+  mensagem  String?
+  status    String   @default("pending") // pending | approved | rejected
+  adminNote String?  @map("admin_note")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relacionamento: 1-para-1 com um convite (quando aprovado)
+  invitation Invitation?
+
+  @@map("intentions")
+}
+
+// Convite gerado por um admin (baseado em uma Intenção)
+model Invitation {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relacionamento: 1-para-1 com a intenção que o gerou
+  intentionId String    @unique @map("intention_id")
+  intention   Intention @relation(fields: [intentionId], references: [id])
+
+  @@map("invitations")
+}
+
+// ----------------------------------------
+// 2. COMUNICAÇÃO E ENGAJAMENTO
+// ----------------------------------------
+
+// Avisos e comunicados
+model Notice {
+  id          String   @id @default(uuid())
+  title       String
+  body        String // Pode ser Markdown
+  visibility  String // 'public' | 'members' | 'admins'
+  publishedAt DateTime @default(now()) @map("published_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  authorId String? @map("author_id")
+  author   Member? @relation(fields: [authorId], references: [id])
+
+  @@map("notices")
+}
+
+// Reuniões (1-a-1 ou eventos de grupo)
+model Meeting {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  scheduledAt DateTime @map("scheduled_at")
+  durationMin Int      @map("duration_min")
+  status      String // 'scheduled' | 'completed' | 'cancelled'
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Quem organizou
+  organizerId String @map("organizer_id")
+  organizer   Member @relation("MeetingsOrganized", fields: [organizerId], references: [id])
+
+  // Quem participou (tabela pivo)
+  participants MeetingParticipant[]
+
+  @@map("meetings")
+}
+
+// Tabela Pivo: Quem participou de qual reunião (Controle de Presença)
+model MeetingParticipant {
+  id        String    @id @default(uuid())
+  role      String // 'participant' | 'speaker'
+  checkinAt DateTime? @map("checkin_at") // A hora do check-in
+  status    String // 'present' | 'absent' | 'late'
+
+  meetingId String  @map("meeting_id")
+  meeting   Meeting @relation(fields: [meetingId], references: [id])
+
+  memberId String @map("member_id")
+  member   Member @relation(fields: [memberId], references: [id])
+
+  @@unique([meetingId, memberId]) // Um membro só pode participar 1x da mesma reunião
+  @@map("meeting_participants")
+}
+
+// ----------------------------------------
+// 3. GERAÇÃO DE NEGÓCIOS (Módulo Opcional A)
+// ----------------------------------------
+
+// Indicação de negócio
+model Referral {
+  id             String   @id @default(uuid())
+  refereeName    String   @map("referee_name") // Nome de quem foi indicado
+  refereeContact String   @map("referee_contact") // Contato (email/fone)
+  description    String
+  status         String   @default("new") // 'new' | 'contacted' | 'in_progress' | 'won' | 'lost'
+  value          Decimal? // Valor do negócio
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Quem indicou
+  referrerId String @map("referrer_id")
+  referrer   Member @relation("ReferralsMade", fields: [referrerId], references: [id])
+
+  // Relacionamentos (o que aconteceu com essa indicação)
+  updates  ReferralUpdate[]
+  thankYou ThankYouPost? // O "Obrigado" é 1-para-1 com a indicação
+
+  @@map("referrals")
+}
+
+// Atualizações de status de uma indicação
+model ReferralUpdate {
+  id        String   @id @default(uuid())
+  status    String
+  note      String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Qual indicação foi atualizada
+  referralId String   @map("referral_id")
+  referral   Referral @relation(fields: [referralId], references: [id])
+
+  // Quem atualizou
+  updatedById String @map("updated_by_id")
+  updatedBy   Member @relation(fields: [updatedById], references: [id])
+
+  @@map("referral_updates")
+}
+
+// Post de "Obrigado" por negócio fechado
+model ThankYouPost {
+  id        String   @id @default(uuid())
+  message   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relacionado à indicação que gerou o negócio
+  referralId String   @unique @map("referral_id")
+  referral   Referral @relation(fields: [referralId], references: [id])
+
+  // Quem escreveu o "Obrigado"
+  authorId String  @map("author_id")
+  author   Member  @relation("ThankYous", fields: [authorId], references: [id])
+  member   Member? @relation(fields: [memberId], references: [id])
+  memberId String?
+
+  @@map("thank_you_posts")
+}
+
+// ----------------------------------------
+// 4. FINANCEIRO
+// ----------------------------------------
+
+// Controle de mensalidades
+model Payment {
+  id          String    @id @default(uuid())
+  periodStart DateTime  @map("period_start")
+  periodEnd   DateTime  @map("period_end")
+  amount      Decimal
+  status      String    @default("pending") // 'pending' | 'paid' | 'overdue'
+  invoiceId   String?   @map("invoice_id") // ID do gateway (ex: Stripe)
+  dueDate     DateTime  @map("due_date")
+  paidAt      DateTime? @map("paid_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  // De quem é essa fatura
+  memberId String @map("member_id")
+  member   Member @relation(fields: [memberId], references: [id])
+
+  @@map("payments")
+}
+
+// ----------------------------------------
+// 5. GOVERNANÇA (Opcional)
+// ----------------------------------------
+
+// Log de auditoria
+model AuditLog {
+  id          String   @id @default(uuid())
+  actorId     String?  @map("actor_id") // Quem fez (pode ser null se for sistema)
+  action      String // Ex: "user.approved"
+  targetTable String   @map("target_table") // Ex: "intentions"
+  targetId    String?  @map("target_id") // Ex: "uuid-da-intencao"
+  data        Json? // O que mudou
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("audit_logs")
+}
