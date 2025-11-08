@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
+    "bcryptjs": "^3.0.3",
     "next": "16.0.1",
     "prisma": "^6.19.0",
     "react": "19.2.0",
@@ -18,6 +19,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
     "@types/node": "^24.10.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
