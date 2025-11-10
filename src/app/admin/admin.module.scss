@@ -1,0 +1,79 @@
+.adminPage {
+    padding: 2rem;
+    font-family: sans-serif;
+}
+
+.adminPage h1 {
+    border-bottom: 2px solid #eee;
+    padding-bottom: 8px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 2rem;
+    font-size: 0.9rem;
+}
+
+.table th,
+.table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+.table th {
+    background-color: #f9f9f9;
+    font-weight: bold;
+}
+
+/* Célula de Ações */
+.actionsCell {
+    display: flex;
+    gap: 8px;
+}
+
+.button {
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: bold;
+    transition: opacity 0.2s;
+}
+
+.button:hover {
+    opacity: 0.8;
+}
+
+.buttonApprove {
+    @extend .button;
+    background-color: #28a745;
+}
+
+.buttonReject {
+    @extend .button;
+    background-color: #dc3545;
+}
+
+
+.statusSpan {
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+    color: white;
+
+
+    &.pending {
+        background-color: #6c757d;
+    }
+
+    &.approved {
+        background-color: #28a745;
+    }
+
+    &.rejected {
+        background-color: #dc3545;
+    }
+}

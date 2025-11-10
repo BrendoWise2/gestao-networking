@@ -22,6 +22,7 @@ model Member {
   id        String   @id @default(uuid())
   nome      String
   email     String   @unique
+  senha     String
   telefone  String?
   empresa   String?
   cargo     String?
