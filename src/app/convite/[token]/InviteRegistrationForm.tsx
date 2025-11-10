@@ -1,21 +1,21 @@
 'use client'; // Componente interativo (Client Component)
 
 import { useEffect, useState, FormEvent } from 'react';
-import styles from '../convite.module.scss'; // Importa o SCSS da pasta pai
+import styles from '../convite.module.scss';
 
-// O "tipo" de dado que esperamos da API de validação (GET)
+
 type IntentionData = {
     nome: string;
     email: string;
 };
 
-// As props que este componente recebe (o token da URL)
+
 type FormProps = {
     token: string;
 };
 
 export default function InviteRegistrationForm({ token }: FormProps) {
-    // Estados de UI
+
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
@@ -28,11 +28,11 @@ export default function InviteRegistrationForm({ token }: FormProps) {
     const [empresa, setEmpresa] = useState('');
     const [cargo, setCargo] = useState('');
 
-    // 1. Efeito de Validação do Token (ao carregar)
+
     useEffect(() => {
         async function validateToken() {
             try {
-                // Chama a API GET que você criou
+
                 const response = await fetch(`/api/invites/${token}`);
                 const data = await response.json();
 
@@ -40,7 +40,7 @@ export default function InviteRegistrationForm({ token }: FormProps) {
                     throw new Error(data.error || 'Falha ao validar convite.');
                 }
 
-                // Se o token for válido, preenchemos o nome e email
+
                 const intention: IntentionData = data;
                 setNome(intention.nome);
                 setEmail(intention.email);
@@ -53,9 +53,9 @@ export default function InviteRegistrationForm({ token }: FormProps) {
         }
 
         validateToken();
-    }, [token]); // Roda sempre que o 'token' mudar
+    }, [token]);
 
-    // 2. Função de Envio do Formulário
+    // Funcao de Envio do Formulario
     async function handleSubmit(event: FormEvent) {
         event.preventDefault();
         setIsLoading(true);
@@ -63,14 +63,14 @@ export default function InviteRegistrationForm({ token }: FormProps) {
         setSuccess(null);
 
         try {
-            // Chama a API POST que você criou
+
             const response = await fetch('/api/invites/complete', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    token, // Envia o token junto
+                    token,
                     nome,
                     email,
                     senha,
@@ -83,11 +83,9 @@ export default function InviteRegistrationForm({ token }: FormProps) {
             const data = await response.json();
 
             if (!response.ok) {
-                // Ex: "Email já existe" ou "Senha muito curta"
                 throw new Error(data.error || 'Falha ao completar cadastro.');
             }
 
-            // Deu tudo certo!
             setSuccess('Cadastro realizado com sucesso! Você já pode fazer parte.');
 
         } catch (err: any) {
@@ -97,23 +95,18 @@ export default function InviteRegistrationForm({ token }: FormProps) {
         }
     }
 
-    // ---- RENDERIZAÇÃO ----
-
     if (isLoading) {
         return <p className={styles.loading}>Validando convite...</p>;
     }
 
-    // Se o token for inválido (expirado, usado, etc.), mostra o erro
     if (error && !success) {
         return <p className={styles.error}>{error}</p>;
     }
 
-    // Se o cadastro foi um sucesso, não mostre mais o formulário
     if (success) {
         return <p className={styles.feedbackSuccess}>{success}</p>;
     }
 
-    // Se o token for válido, mostra o formulário
     return (
         <form onSubmit={handleSubmit} className={styles.form}>
             <div className={styles.formGroup}>
@@ -134,7 +127,7 @@ export default function InviteRegistrationForm({ token }: FormProps) {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    readOnly // O email não pode ser mudado
+                    readOnly
                 />
             </div>
 

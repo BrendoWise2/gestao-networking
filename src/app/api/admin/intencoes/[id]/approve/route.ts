@@ -2,12 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { randomBytes } from 'crypto';
 
-// A linha abaixo está corrigida (sem o '}' extra)
 export async function POST(
     req: NextRequest,
     context: { params: Promise<{ id: string }> }
 ) {
-    const { id: intentionId } = await context.params; // <-- agora resolvemos a Promise
+    const { id: intentionId } = await context.params;
 
     try {
         const newInvitation = await prisma.$transaction(async (tx) => {
@@ -48,7 +47,7 @@ export async function POST(
             }/convite/${newInvitation.token}`;
 
         console.log("------------------------------------------------");
-        console.log("✅ SIMULAÇÃO DE ENVIO DE E-MAIL");
+        console.log("SIMULAÇÃO DE ENVIO DE E-MAIL");
         console.log(`Link de Convite para ${newInvitation.intentionId}:`);
         console.log(invitationLink);
         console.log("------------------------------------------------");

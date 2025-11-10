@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
         if (error instanceof z.ZodError) {
             return NextResponse.json(
                 { error: 'Dados inválidos', details: error.issues },
-                { status: 400 } // Bad Request
+                { status: 400 }
             );
         }
 
@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
         if (error instanceof Error) {
             return NextResponse.json(
                 { error: error.message },
-                { status: 400 } // Bad Request
+                { status: 400 }
             );
         }
 

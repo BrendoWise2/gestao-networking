@@ -16,7 +16,7 @@ export function middleware(req: NextRequest) {
         }
 
         const authHeader = req.headers.get('Authorization');
-        const token = authHeader?.split('Bearer ')[1]; // Ajuste no split
+        const token = authHeader?.split('Bearer ')[1];
 
         if (token && token === ADMIN_SECRET) {
             return NextResponse.next();
@@ -28,11 +28,10 @@ export function middleware(req: NextRequest) {
         );
     }
 
-    // Se não for rota de admin, deixa passar
     return NextResponse.next();
 }
 
 // quais rotas o middleware vai ouvir
 export const config = {
-    matcher: '/api/admin/:path*', //para proteger tudo dentro de /api/admin
+    matcher: '/api/admin/:path*',
 };

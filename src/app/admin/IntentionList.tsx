@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import styles from './admin.module.scss'; // Importa o SCSS
+import styles from './admin.module.scss';
 
-// Define o "tipo" de dado que esperamos da API
 type Intention = {
     id: string;
     nome: string;
@@ -18,13 +17,12 @@ export default function IntentionList() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Função para buscar os dados da API
+
     async function fetchIntentions() {
         setIsLoading(true);
         setError(null);
         try {
-            // NOTA: Esta parte do prompt não é ideal para UX,
-            // mas é a mais rápida para o teste (como permitido).
+
             const secret = prompt('Digite o ADMIN_SECRET para autenticar:');
 
             if (!secret) {
@@ -50,12 +48,11 @@ export default function IntentionList() {
         }
     }
 
-    // Hook para buscar os dados assim que o componente carregar
+
     useEffect(() => {
         fetchIntentions();
-    }, []); // O array vazio [] faz isso rodar só uma vez
+    }, []);
 
-    // Função para lidar com Aprovação ou Recusa
     async function handleAction(id: string, action: 'approve' | 'reject') {
         if (!confirm(`Tem certeza que deseja ${action === 'approve' ? 'aprovar' : 'recusar'} esta intenção?`)) {
             return;
@@ -80,7 +77,7 @@ export default function IntentionList() {
                 throw new Error(data.error || 'Falha ao executar ação.');
             }
 
-            // Se deu certo, atualiza o status na tela
+
             setIntentions((prevIntentions) =>
                 prevIntentions.map((item) =>
                     item.id === id ? { ...item, status: action === 'approve' ? 'approved' : 'rejected' } : item
@@ -93,7 +90,6 @@ export default function IntentionList() {
         }
     }
 
-    // Renderização da interface
     if (isLoading) {
         return <p>Carregando intenções...</p>;
     }
@@ -102,7 +98,6 @@ export default function IntentionList() {
         return <p style={{ color: 'red' }}>Erro: {error}</p>;
     }
 
-    // Função para pegar a classe de status correta
     const getStatusClass = (status: string) => {
         if (status === 'approved') return styles.approved;
         if (status === 'rejected') return styles.rejected;

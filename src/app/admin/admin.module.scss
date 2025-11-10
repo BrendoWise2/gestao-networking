@@ -1,4 +1,3 @@
-/* Container principal da página */
 .adminPage {
     padding: 2rem;
     font-family: sans-serif;
@@ -9,7 +8,6 @@
     padding-bottom: 8px;
 }
 
-/* Tabela */
 .table {
     width: 100%;
     border-collapse: collapse;
@@ -35,7 +33,6 @@
     gap: 8px;
 }
 
-/* Botões */
 .button {
     color: white;
     border: none;
@@ -51,32 +48,32 @@
 }
 
 .buttonApprove {
-    @extend .button; // Herda o estilo de .button
-    background-color: #28a745; // verde
+    @extend .button;
+    background-color: #28a745;
 }
 
 .buttonReject {
-    @extend .button; // Herda o estilo de .button
-    background-color: #dc3545; // vermelho
+    @extend .button;
+    background-color: #dc3545;
 }
 
-/* Status */
+
 .statusSpan {
     font-weight: bold;
     padding: 4px 8px;
     border-radius: 4px;
     color: white;
 
-    // Modificadores de status
+
     &.pending {
-        background-color: #6c757d; // cinza
+        background-color: #6c757d;
     }
 
     &.approved {
-        background-color: #28a745; // verde
+        background-color: #28a745;
     }
 
     &.rejected {
-        background-color: #dc3545; // vermelho
+        background-color: #dc3545;
     }
 }
