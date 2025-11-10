@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { error } from 'console';
 
-
-export async function GET(req: NextRequest, { params }: { token: string } }) {
-
-    const token = params.token;
-
-    //Validacao do convite como se existe, se e valido, ja utilizado ou expirou.
-
+export async function GET(
+    req: NextRequest,
+    context: { params: Promise<{ token: string }> }
+) {
     try {
+        const { token } = await context.params;
+
+
         const invitation = await prisma.invitation.findUnique({
             where: { token: token },
             include: {
@@ -29,6 +28,8 @@ export async function GET(req: NextRequest, { params }: { token: string } }) {
             return NextResponse.json({ error: 'Convite expirado' }, { status: 410 });
         }
 
+        return NextResponse.json(invitation.intention, { status: 200 });
+
     } catch (error: any) {
         console.error("Erro ao validar o convite", error);
 
@@ -37,5 +38,4 @@ export async function GET(req: NextRequest, { params }: { token: string } }) {
             { status: 500 }
         );
     }
-
 }
